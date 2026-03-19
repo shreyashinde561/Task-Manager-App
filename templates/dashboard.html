@@ -1,0 +1,213 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root{
+          --bg: #ffffff;
+          --text: #000000;
+          --card: #f2f2f2;
+        }
+        
+        body.dark{
+          --bg: #0f2027;
+          --text: #ffffff;
+          --card: rgba(255,255,255,0.12);
+        }
+        
+        body{
+          background: var(--bg);
+          color: var(--text);
+        }
+        
+        .card{
+          background: var(--card);
+        }
+
+        body.dark {
+  background: radial-gradient(circle at top left,#4facfe,#0f2027);
+  color: white;
+}
+
+body.light {
+  background: #f4f6fb;
+  color: #111;
+}
+
+body.light .sidebar {
+  background: #ffffff;
+  color: black;
+}
+
+body.light .card {
+  background: #ffffff;
+  color: black;
+}
+
+body.light a {
+  color: #333;
+}
+        </style>
+    <style>
+        * {margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body {display:flex;min-height:100vh;background:radial-gradient(circle at top left,#4facfe,#0f2027);color:#fff;}
+        .sidebar {width:260px;background:rgba(0,0,0,0.55);backdrop-filter:blur(15px);padding:25px 15px;box-shadow:4px 0 20px rgba(0,0,0,0.4);}
+        .avatar {width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4facfe,#00f2fe);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px auto;overflow:hidden;box-shadow:0 0 20px rgba(79,172,254,0.7);}
+        .avatar img {width:100%;height:100%;object-fit:cover;}
+        .sidebar h3 {text-align:center;margin-bottom:25px;font-weight:600;}
+        .sidebar a {display:block;color:white;text-decoration:none;padding:14px;margin-bottom:10px;border-radius:10px;transition:.3s;background:rgba(255,255,255,.05);}
+        .sidebar a:hover {background:linear-gradient(135deg,#4facfe,#00f2fe);color:#000;transform:translateX(5px);}
+        .content {flex:1;padding:40px;}
+        h2 {margin-bottom:25px;font-size:28px;background:linear-gradient(to right,#00f2fe,#4facfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .card {background:rgba(255,255,255,.12);backdrop-filter:blur(12px);padding:20px;border-radius:16px;margin-bottom:25px;}
+        textarea {width:100%;border-radius:12px;border:none;padding:12px;font-family:monospace;background:rgba(0,0,0,.4);color:#fff;}
+        button {background:linear-gradient(135deg,#4facfe,#00f2fe);border:none;padding:12px 22px;border-radius:10px;cursor:pointer;font-weight:600;}
+        .zip-row {display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(255,255,255,.1);}
+        .code-box{display:flex;justify-content:space-between;background:#4e7ea8;padding:15px;border-radius:12px;margin-bottom:15px;}
+        .popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;justify-content:center;align-items:center;}
+        .popup-box{background:white;padding:25px;border-radius:12px;text-align:center;width:300px;}
+        .popup-btn{display:inline-block;padding:10px 15px;margin:5px;border-radius:8px;color:white;}
+        .popup-btn.orange{background:orange;}
+        .popup-btn.red{background:red;}
+        .popup-btn.gray{background:gray;}
+    </style>
+
+<script>
+function openPopup(codeId){
+    document.getElementById("deletePopup").style.display="flex";
+    document.getElementById("deleteMeBtn").href="/delete_code_me/"+codeId;
+    document.getElementById("deleteAllBtn").href="/delete_code_all/"+codeId;
+}
+function closePopup(){document.getElementById("deletePopup").style.display="none";}
+</script>
+</head>
+
+<body>
+
+<div class="sidebar">
+<a href="/profile">
+{% if session['profile_pic'] %}
+<div class="avatar"><img src="{{ url_for('static', filename='profile_pics/' ~ session['profile_pic']) }}"></div>
+{% else %}
+<div class="avatar">{{ session['username'][0]|upper }}</div>
+{% endif %}
+</a>
+
+<h3>{{ session['username'] }}</h3>
+
+<body class="{{ session.get('theme','dark') }}"></body>
+<a href="/dashboard">🏠 Dashboard</a>
+<a href="/chat">💬 Chat</a>
+<a href="/profile">👤 Profile</a>
+<a href="/logout">🚪 Logout</a>
+<a href="/my_tasks">📋 My Tasks</a>
+<a href="/toggle_theme" style="margin-top:15px; display:block;">
+    {% if session.get('theme') == 'dark' %}
+      🌙 Light mode
+    {% else %}
+      ☀ Dark mode
+    {% endif %}
+    </a>
+<!-- ✅ TIMER ADDED (ONLY THIS PART NEW) -->
+<div id="timerBox" style="margin-top:15px;text-align:center;font-size:14px;color:#00f2fe;">
+    Session ends in: <span id="timer"></span>
+</div>
+
+</div>
+
+<div class="content">
+
+<h2>Welcome, {{ session['username'] }} 👋</h2>
+
+<div class="card">
+<h3>🧠 Upload Code</h3>
+<form method="post" action="/upload_code">
+<textarea name="code" rows="5"></textarea><br><br>
+<button type="submit">Upload Code</button>
+</form>
+</div>
+
+<div class="card">
+<h3>📦 Upload ZIP File</h3>
+<form method="POST" enctype="multipart/form-data">
+<input type="file" name="file" required>
+<button type="submit">Upload</button>
+</form>
+</div>
+
+<div class="card">
+<h3>📁 Shared ZIP Files</h3>
+{% for f in shared_files %}
+<div class="zip-row">
+{{ f.name }} ({{ f.size }} KB) — {{ f.uploaded_by }}
+<a href="/download_shared/{{ f.name }}">Download⬇</a>
+{% if f.uploaded_by == session["username"] %}
+<a href="/delete_shared/{{ f.id }}" style="color:red;">Delete🗑</a>
+{% endif %}
+</div>
+{% endfor %}
+</div>
+
+<h2>Your Codes</h2>
+
+{% for code in codes %}
+<div class="code-box">
+<div>
+<strong>{{ code[1] }}</strong>
+<pre>{{ code[2] }}</pre>
+</div>
+<div>
+<a href="/download_code/{{ code[0] }}">Download⬇</a>
+{% if code[1] == session["username"] %}
+<button onclick="openPopup({{ code[0] }})">Delete🗑</button>
+{% endif %}
+</div>
+</div>
+{% endfor %}
+
+</div>
+
+<div id="deletePopup" class="popup-overlay">
+<div class="popup-box">
+<h3>Delete Code</h3>
+<a id="deleteMeBtn" class="popup-btn orange">Delete for me</a>
+<a id="deleteAllBtn" class="popup-btn red">Delete for all</a><br>
+<button onclick="closePopup()" class="popup-btn gray">Cancel</button>
+</div>
+</div>
+
+<!-- ✅ TIMER SCRIPT -->
+<script>
+let remaining = {{ remaining_time }};
+
+function startTimer() {
+    let timerEl = document.getElementById("timer");
+
+    function updateTimer() {
+        if (remaining <= 0) {
+            window.location.href = "/logout?auto=1";
+        } else {
+            let minutes = Math.floor(remaining / 60);
+            let seconds = remaining % 60;
+            timerEl.innerText =
+                minutes.toString().padStart(2, '0') + ":" +
+                seconds.toString().padStart(2, '0');
+            remaining--;
+        }
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+}
+
+startTimer();
+</script>
+
+</body>
+</html>

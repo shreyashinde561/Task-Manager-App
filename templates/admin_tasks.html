@@ -1,0 +1,143 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Tasks</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body.dark {background: radial-gradient(circle at top left,#4facfe,#0f2027); color: white;}
+        body.light {background: #f4f6fb; color: #111;}
+
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:30px;}
+
+        h2{margin-bottom:15px;}
+
+        .card{
+            width:600px; max-width:95%;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            padding:20px 25px;
+            border-radius:18px;
+            margin-bottom:20px;
+            box-shadow:0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        input, textarea, select{
+            width:100%;
+            padding:12px;
+            border-radius:12px;
+            border:none;
+            outline:none;
+            margin-top:6px;
+            background: rgba(0,0,0,0.4);
+            color:white;
+            font-family:monospace;
+        }
+
+        button{
+            margin-top:15px;
+            padding:12px 25px;
+            border:none;
+            border-radius:15px;
+            cursor:pointer;
+            font-weight:600;
+            background: linear-gradient(135deg,#4facfe,#00f2fe);
+            color:black;
+            transition:0.3s;
+        }
+        button:hover{
+            transform:translateY(-2px);
+            box-shadow:0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .view-tasks-btn{
+            display:block;
+            width:200px;
+            margin:30px auto 0 auto;
+            text-align:center;
+        }
+
+        #popup-msg {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg,#4facfe,#00f2fe);
+            color: black;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+            z-index: 9999;
+        }
+
+        #popup-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="{{ session.get('theme','dark') }}">
+
+<h2>Admin Tasks</h2>
+
+<!-- CREATE TASK FORM -->
+<div class="card">
+    <form action="/create_task" method="POST">
+
+        <label>Task Title</label><br>
+        <input type="text" name="title" required><br><br>
+
+        <label>Description</label><br>
+        <textarea name="description"></textarea><br><br>
+
+        <!-- ✅ UPDATED PART (User dropdown) -->
+        <label>Assign To</label><br>
+        <select name="assigned_to" required>
+            <option value="">Select User</option>
+            <option value="all">All Users</option>
+
+            {% for user in users %}
+                <option value="{{ user[0] }}">{{ user[0] }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        
+
+        <label>Deadline</label><br>
+<input type="datetime-local" name="deadline" id="deadline" required><br><br>
+
+<script>
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById("deadline").min = now.toISOString().slice(0,16);
+</script>
+
+        <button type="submit">Send Task</button>
+    </form>
+</div>
+
+<!-- VIEW TASKS BUTTON -->
+<a href="{{ url_for('view_tasks') }}">
+    <button class="view-tasks-btn">View Tasks</button>
+</a>
+
+<!-- POPUP MESSAGE -->
+{% if request.args.get('success') %}
+<div id="popup-msg">Task sent successfully!</div>
+<script>
+    const popup = document.getElementById('popup-msg');
+    popup.classList.add('show');
+    setTimeout(() => { popup.classList.remove('show'); }, 3000);
+</script>
+{% endif %}
+
+</body>
+</html>

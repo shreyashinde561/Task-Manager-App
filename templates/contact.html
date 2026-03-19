@@ -1,0 +1,67 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Contact</title>
+<style>
+body{
+  margin:0;
+  font-family:Segoe UI,Arial;
+  background:#0f172a;
+  color:white;
+}
+nav{
+  background:#ffffff10;
+  backdrop-filter:blur(15px);
+  padding:15px 40px;
+  display:flex;
+  justify-content:space-between;
+}
+nav a{color:#34ffd2;text-decoration:none;margin-left:20px;}
+.container{
+  padding:80px;
+  max-width:500px;
+  margin:auto;
+}
+input,textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  margin-bottom:15px;
+}
+button{
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  width:100%;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <b>Collab App</b>
+  <div>
+    <a href="/">Login</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<div class="container">
+<h2>Contact Us</h2>
+
+<form method="POST">
+  <input type="text" name="username" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <textarea rows="4" name="msg" placeholder="Message" required></textarea>
+  <button type="submit">Send</button>
+</form>
+
+</div>
+
+</body>
+</html>

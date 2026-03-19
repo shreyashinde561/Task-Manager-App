@@ -1,0 +1,85 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Task Details</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+body.dark{
+background: radial-gradient(circle at top left,#4facfe,#0f2027);
+color:white;
+}
+
+body.light{
+background:#f4f6fb;
+color:#111;
+}
+
+body{
+font-family:Poppins;
+padding:40px;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.card{
+
+background: rgba(255,255,255,0.12);
+backdrop-filter: blur(12px);
+padding:30px;
+border-radius:18px;
+width:500px;
+max-width:95%;
+box-shadow:0 6px 20px rgba(0,0,0,0.25);
+transition:0.3s;
+
+}
+
+.card:hover{
+transform:translateY(-4px);
+box-shadow:0 10px 25px rgba(0,0,0,0.35);
+}
+
+h2{
+margin-bottom:20px;
+font-weight:600;
+}
+
+p{
+margin:10px 0;
+font-size:14px;
+}
+
+</style>
+
+</head>
+
+<body class="{{ session.get('theme','dark') }}">
+
+<div class="card">
+
+<h2>{{task.task_title}}</h2>
+
+<p><b>Description:</b> {{task.task_description}}</p>
+
+<p><b>Assigned To:</b> {{task.assigned_to}}</p>
+
+<p><b>Deadline:</b> {{task.deadline}}</p>
+
+<p><b>Status:</b> {{task.status}}</p>
+
+<p><b>Created By:</b> {{task.created_by}}</p>
+
+<p><b>Created At:</b> {{task.created_at}}</p>
+
+</div>
+
+</body>
+</html>

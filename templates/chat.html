@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Team Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body.dark{
+  background: radial-gradient(circle at top left,#4facfe,#0f2027);
+  color:white;
+}
+
+body.light{
+  background:#f4f6fb;
+  color:#111;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background:radial-gradient(circle at top left,#4facfe,#0f2027);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+}
+
+/* TOP NAVBAR */
+.topbar{
+  height:60px;
+  background:rgba(0,0,0,0.45);
+  backdrop-filter:blur(10px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 25px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
+
+.title{
+  font-size:20px;
+  font-weight:600;
+}
+
+.top-actions{
+  display:flex;
+  gap:10px;
+}
+
+.chat-btn{
+  text-decoration:none;
+  background:linear-gradient(135deg,#4facfe,#00f2fe);
+  color:black;
+  padding:8px 16px;
+  border-radius:20px;
+  font-weight:600;
+  font-size:13px;
+}
+
+/* CONTENT */
+.content{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:30px;
+}
+
+.chat-card{
+  width:700px;
+  max-width:95%;
+  height:500px;
+  display:flex;
+  flex-direction:column;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(15px);
+  border-radius:20px;
+  padding:20px;
+  color:white;
+  box-shadow:0 8px 30px rgba(0,0,0,0.3);
+  overflow:hidden;
+}
+
+.messages-box{
+  flex:1;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding-right:10px;
+}
+
+/* MESSAGE BUBBLES */
+.msg-row{
+  display:flex;
+  flex-direction:column;
+}
+
+.msg-bubble{
+  max-width:70%;
+  padding:10px 14px;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  word-wrap:break-word;
+  font-size:14px;
+}
+
+/* WhatsApp style: User / Admin */
+.msg-user{
+  background:#6ba8f7; /* left blue bubble */
+  align-self:flex-start;
+  color:#fff;
+  border-top-left-radius:5px;
+  border-top-right-radius:18px;
+  border-bottom-left-radius:18px;
+  border-bottom-right-radius:18px;
+}
+
+.msg-admin{
+  background:#3cffb3; /* right green bubble */
+  align-self:flex-end;
+  color:#111;
+  border-top-left-radius:18px;
+  border-top-right-radius:5px;
+  border-bottom-left-radius:18px;
+  border-bottom-right-radius:18px;
+}
+
+/* Timestamp */
+.msg-time{
+  font-size:11px;
+  opacity:0.7;
+  margin-top:4px;
+  text-align:right;
+}
+
+/* Dropdown menu */
+.arrow{
+  margin-left:8px;
+  font-size:14px;
+  cursor:pointer;
+  display:none;
+}
+
+.msg-bubble:hover .arrow{
+  display:inline;
+}
+
+.menu{
+  display:none;
+  position:absolute;
+  right:0;
+  top:25px;
+  background:white;
+  color:black;
+  border-radius:8px;
+  box-shadow:0 5px 10px rgba(0,0,0,0.2);
+  min-width:150px;
+  z-index:100;
+}
+
+.menu a{
+  display:block;
+  padding:8px 12px;
+  text-decoration:none;
+  color:black;
+  font-size:13px;
+}
+
+.menu a:hover{
+  background:#f2f2f2;
+}
+
+/* Input */
+.send-row{
+  display:flex;
+  gap:10px;
+}
+
+input[type="text"]{
+  border-radius:30px;
+  border:none;
+  padding:10px 15px;
+  width:100%;
+  outline:none;
+}
+
+button{
+  background:linear-gradient(135deg,#4facfe,#00f2fe);
+  color:black;
+  border:none;
+  padding:10px 22px;
+  border-radius:30px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- TOP NAVBAR -->
+<nav class="topbar">
+<span class="title">Team Chat</span>
+
+<div class="top-actions">
+{% if session["role"] == "admin" %}
+<a href="/admin_private_chat" class="chat-btn">👤 Chat with User</a>
+{% else %}
+<a href="/user_admin_chat" class="chat-btn">👑 Chat with Admin</a>
+{% endif %}
+<a href="/dashboard" class="chat-btn">⬅ Back</a>
+</div>
+</nav>
+
+<div class="content">
+<div class="chat-card">
+<div class="messages-box">
+
+{% for id,user,msg,time in messages %}
+<div class="msg-row">
+<div class="msg-bubble {% if user==session['username'] %}msg-admin{% else %}msg-user{% endif %}">
+<b>{{ user }}:</b> {{ msg }}
+
+<span class="arrow" onclick="toggleMenu('menu{{id}}')">˅</span>
+<div class="menu" id="menu{{id}}">
+<a href="/delete_for_me/{{id}}">Delete for Me</a>
+{% if user == session["username"] %}
+<a href="/delete_for_everyone/{{id}}">Delete for Everyone</a>
+{% endif %}
+</div>
+
+<div class="msg-time">
+{{ time.strftime('%I:%M %p | %d %b %Y') }}
+</div>
+</div>
+</div>
+{% endfor %}
+
+</div>
+
+<form method="post" class="send-row">
+<input type="text" name="message" placeholder="Type your message..." required>
+<button type="submit">Send</button>
+</form>
+</div>
+</div>
+
+<script>
+function toggleMenu(id){
+  let menus=document.querySelectorAll(".menu")
+  menus.forEach(menu=>{
+    if(menu.id!==id){ menu.style.display="none" }
+  })
+  let current=document.getElementById(id)
+  current.style.display = (current.style.display==="block") ? "none" : "block"
+}
+
+document.addEventListener("click",function(e){
+  if(!e.target.classList.contains("arrow")){
+    document.querySelectorAll(".menu").forEach(menu=>{
+      menu.style.display="none"
+    })
+  }
+})
+</script>
+
+</body>
+</html>

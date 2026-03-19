@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins',sans-serif;
+        }
+
+        body{
+            min-height:100vh;
+            background: radial-gradient(circle at top left, #4facfe, #0f2027);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            color:#fff;
+        }
+
+        /* CARD */
+        .edit-card{
+            width:480px;
+            max-width:95%;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(15px);
+            border-radius:22px;
+            padding:35px 30px;
+            box-shadow:0 0 30px rgba(0,0,0,0.35);
+            animation:fadeIn 0.8s ease;
+            text-align:center;
+        }
+
+        /* AVATAR */
+        .avatar-preview,
+        .avatar-letter{
+            width:120px;
+            height:120px;
+            border-radius:50%;
+            margin:0 auto 15px auto;
+            box-shadow:0 0 20px rgba(79,172,254,0.8);
+        }
+
+        .avatar-preview{
+            object-fit:cover;
+            border:3px solid rgba(255,255,255,0.8);
+        }
+
+        .avatar-letter{
+            background: linear-gradient(135deg,#4facfe,#00f2fe);
+            color:black;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:48px;
+            font-weight:bold;
+        }
+
+        /* FIELDS */
+        .field{
+            margin-bottom:16px;
+            text-align:left;
+        }
+
+        label{
+            font-size:12px;
+            text-transform:uppercase;
+            letter-spacing:1px;
+            opacity:0.8;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="file"]{
+            width:100%;
+            padding:11px 12px;
+            margin-top:6px;
+            border-radius:12px;
+            border:none;
+            outline:none;
+            background: rgba(0,0,0,0.4);
+            color:#fff;
+        }
+
+        input::placeholder{
+            color:#ccc;
+        }
+
+        /* BUTTON */
+        button{
+            width:100%;
+            margin-top:12px;
+            padding:12px;
+            border:none;
+            border-radius:14px;
+            background: linear-gradient(135deg,#4facfe,#00f2fe);
+            color:black;
+            font-weight:600;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        button:hover{
+            transform:translateY(-2px);
+            box-shadow:0 8px 20px rgba(79,172,254,0.6);
+        }
+
+        /* BACK LINK */
+        .back-link{
+            display:inline-block;
+            margin-top:15px;
+            text-decoration:none;
+            color:#fff;
+            opacity:0.8;
+        }
+
+        .back-link:hover{
+            text-decoration:underline;
+        }
+
+        @keyframes fadeIn{
+            from{opacity:0; transform:translateY(20px);}
+            to{opacity:1; transform:translateY(0);}
+        }
+    </style>
+</head>
+<body>
+
+<div class="edit-card">
+
+    {% if user[2] %}
+        <img src="{{ url_for('static', filename='profile_pics/' ~ user[2]) }}" class="avatar-preview">
+    {% else %}
+        <div class="avatar-letter">
+            {{ user[0][0]|upper }}
+        </div>
+    {% endif %}
+
+    <!-- DO NOT CHANGE LOGIC -->
+    <form method="post" enctype="multipart/form-data">
+
+        <div class="field">
+            <label>Username</label>
+            <input type="text" name="username" value="{{ user[0] }}">
+        </div>
+
+        <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ user[1] }}">
+        </div>
+
+        <div class="field">
+            <label>New Password</label>
+            <input type="password" name="password" placeholder="Leave blank to keep same password">
+        </div>
+
+        <div class="field">
+            <label>Profile Picture</label>
+            <input type="file" name="profile_pic">
+        </div>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <a href="/profile" class="back-link">← Back to Profile</a>
+
+</div>
+
+</body>
+</html>
