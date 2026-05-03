@@ -4,20 +4,18 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "secret"
+app.secret_key = os.getenv("SECRET_KEY", "secret")
 
-# ---------------- DB CONNECTION (FINAL CLEAN) ----------------
+# ---------------- DB CONNECTION (FIXED FOR RAILWAY) ----------------
 
 def get_db():
     return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST", "localhost"),
-        user=os.getenv("MYSQLUSER", "root"),
-        password=os.getenv("MYSQLPASSWORD", "root"),
-        database=os.getenv("MYSQLDATABASE", "task_manager_app"),
-        port=int(os.getenv("MYSQLPORT", 3306))
+        host=os.getenv("MYSQLHOST"),
+        user=os.getenv("MYSQLUSER"),
+        password=os.getenv("MYSQLPASSWORD"),
+        database=os.getenv("MYSQLDATABASE"),
+        port=int(os.getenv("MYSQLPORT") or 3306)
     )
-
-db = get_db()
 
 # ---------------- HOME ----------------
 @app.route("/")
@@ -28,12 +26,14 @@ def home():
 # ---------------- REGISTER ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    db = get_db()
+    cursor = db.cursor()
+
     if request.method == "POST":
         username = request.form["username"]
         email = request.form["email"]
         password = generate_password_hash(request.form["password"])
 
-        cursor = db.cursor()
         cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
         existing = cursor.fetchone()
 
@@ -54,10 +54,12 @@ def register():
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["POST"])
 def login():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
     email = request.form["email"]
     password = request.form["password"]
 
-    cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
     user = cursor.fetchone()
 
@@ -76,6 +78,7 @@ def dashboard():
     if "user_id" not in session:
         return redirect("/")
 
+    db = get_db()
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
@@ -95,6 +98,7 @@ def create_project():
     if session.get("role") != "admin":
         return "Unauthorized"
 
+    db = get_db()
     cursor = db.cursor()
 
     cursor.execute("""
@@ -116,9 +120,11 @@ def create_task():
     if session.get("role") != "admin":
         return "Unauthorized"
 
+    db = get_db()
+    cursor = db.cursor()
+
     data = request.form
 
-    cursor = db.cursor()
     cursor.execute("""
         INSERT INTO tasks(project_id,title,description,assigned_to,status,due_date)
         VALUES(%s,%s,%s,%s,'pending',%s)
@@ -152,7 +158,9 @@ def my_tasks():
     if "user_id" not in session:
         return redirect("/")
 
+    db = get_db()
     cursor = db.cursor(dictionary=True)
+
     cursor.execute("""
         SELECT * FROM tasks WHERE assigned_to=%s
     """, (session["user_id"],))
@@ -166,7 +174,9 @@ def complete_task(id):
     if "user_id" not in session:
         return redirect("/")
 
+    db = get_db()
     cursor = db.cursor()
+
     cursor.execute("""
         UPDATE tasks SET status='completed'
         WHERE id=%s AND assigned_to=%s
@@ -182,6 +192,7 @@ def admin():
     if session.get("role") != "admin":
         return "Unauthorized"
 
+    db = get_db()
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("SELECT * FROM users")
