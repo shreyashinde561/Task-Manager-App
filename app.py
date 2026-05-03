@@ -8,17 +8,29 @@ app = Flask(__name__)
 app.secret_key = "secret"
 
 # ---------------- DB CONNECTION (FIXED) ----------------
+# ---------------- DB CONNECTION (FINAL FIX) ----------------
+
+
 mysql_url = os.getenv("MYSQL_URL")
 
-url = urllib.parse.urlparse(mysql_url)
+if mysql_url:
+    url = urllib.parse.urlparse(mysql_url)
 
-db = mysql.connector.connect(
-    host=url.hostname,
-    user=url.username,
-    password=url.password,
-    database=url.path.lstrip('/'),
-    port=url.port
-)
+    db = mysql.connector.connect(
+        host=url.hostname,
+        user=url.username,
+        password=url.password,
+        database=url.path[1:],  # remove leading /
+        port=url.port
+    )
+else:
+    # local fallback
+    db = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="collab_app"
+    )
 
 # ---------------- HOME ----------------
 @app.route("/")
