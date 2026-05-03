@@ -5,17 +5,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-# 🔐 safer secret key
+# 🔐 secret key
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
-# ---------------- DB CONNECTION (RAILWAY SAFE) ----------------
+# ---------------- SAFE DB CONNECTION ----------------
 def get_db():
     return mysql.connector.connect(
         host=os.getenv("MYSQLHOST"),
         user=os.getenv("MYSQLUSER"),
         password=os.getenv("MYSQLPASSWORD"),
         database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT", "3306"))
+        port=int(os.getenv("MYSQLPORT", "3306"))  # 🔥 FIX HERE
     )
 
 # ---------------- HOME ----------------
@@ -56,13 +56,11 @@ def login():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    email = request.form["email"]
-    password = request.form["password"]
-
-    cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
+    cursor.execute("SELECT * FROM users WHERE email=%s",
+                   (request.form["email"],))
     user = cursor.fetchone()
 
-    if user and check_password_hash(user["password"], password):
+    if user and check_password_hash(user["password"], request.form["password"]):
         session["user_id"] = user["id"]
         session["username"] = user["username"]
         session["role"] = user["role"]
@@ -121,24 +119,18 @@ def create_task():
     db = get_db()
     cursor = db.cursor()
 
-    data = request.form
+    d = request.form
 
     cursor.execute("""
         INSERT INTO tasks(project_id,title,description,assigned_to,status,due_date)
         VALUES(%s,%s,%s,%s,'pending',%s)
-    """, (
-        data["project_id"],
-        data["title"],
-        data["description"],
-        data["assigned_to"],
-        data["due_date"]
-    ))
+    """, (d["project_id"], d["title"], d["description"], d["assigned_to"], d["due_date"]))
 
     db.commit()
     return redirect("/dashboard")
 
 
-# ---------------- OTHER ROUTES ----------------
+# ---------------- STATIC PAGES ----------------
 @app.route("/about")
 def about():
     return render_template("about.html")
@@ -148,6 +140,7 @@ def contact():
     return render_template("contact.html")
 
 
-# ---------------- RUN (LOCAL ONLY) ----------------
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
