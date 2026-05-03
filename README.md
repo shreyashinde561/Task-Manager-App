@@ -1,47 +1,63 @@
-
 # Collab App 💬
 
-A web-based collaboration platform built using Flask and MySQL that enables real-time communication, task management, and secure user authentication.
+A full-stack team collaboration and task management web application built using **Flask + MySQL**.  
+It allows users to manage projects, assign tasks, track progress, and collaborate efficiently.
 
 ---
 
 ## 🚀 Features
-- 🔐 User Registration & Login with OTP verification  
-- 💬 Team Chat System  
-- 👨‍💼 Admin & User Private Chat  
-- 📋 Task Management System  
-- 📁 File Sharing  
-- 👤 Profile Management  
+
+- 🔐 Secure User Authentication (Signup/Login)
+- 👥 Role-based Access Control (Admin / Member)
+- 📋 Project & Task Management System
+- 📊 Task Status Tracking (Pending / In Progress / Completed)
+- 💬 Team Collaboration Support
+- 👤 User Dashboard with Assigned Tasks
 
 ---
 
 ## 🛠 Tech Stack
-- Backend: Python (Flask)  
-- Database: MySQL  
-- Frontend: HTML, CSS, Bootstrap  
+
+- **Backend:** Python (Flask)
+- **Database:** MySQL
+- **Frontend:** HTML, CSS, Bootstrap
+- **Tools:** Git, GitHub
 
 ---
 
 ## 🔐 Security Features
-- Password hashing  
-- OTP-based login verification  
-- Session management  
-<img width="1600" height="751" alt="image" src="https://github.com/user-attachments/assets/b0cc2f3e-c466-401a-b654-1331a47a66cc" />
-<img width="1600" height="739" alt="image" src="https://github.com/user-attachments/assets/eb62447c-db7d-4650-a423-9c56a5b1797c" />
-<img width="1600" height="790" alt="image" src="https://github.com/user-attachments/assets/47a542da-29b5-45ca-b48d-bc24fd11f999" />
-<img width="1600" height="763" alt="image" src="https://github.com/user-attachments/assets/bc36e16f-9970-4bc2-a3b2-fde3ffb7d1a7" />
+
+- Password hashing using Werkzeug
+- Session-based authentication
+- Role-based access control (RBAC)
+- Secure database queries (parameterized SQL)
+
+---
+
+## 📸 Screenshots
+
+<img width="1901" height="911" alt="Screenshot 2026-05-03 131326" src="https://github.com/user-attachments/assets/aefd6235-2f71-4807-b9a3-b020575e1665" />
+<img width="1899" height="907" alt="Screenshot 2026-05-03 131305" src="https://github.com/user-attachments/assets/4da8f020-af3e-4161-a828-081564c6e5f9" />
 
 
 
+---
 
+## 👨‍💻 Developer
 
+Shreya Shinde
 
-## 👩‍💻 Author
-Nilam Thakare  
+---
+
+## 🚀 Deployment
+
+This project is designed to be deployed on **Railway / Render** with MySQL database integration.
 
 ---
 
 ## ⭐ Future Improvements
-- Real-time notifications  
-- UI enhancements  
-- Cloud deployment  
+
+- Real-time notifications using WebSockets
+- Live chat system upgrade
+- File sharing with cloud storage
+- Mobile responsive UI improvements
