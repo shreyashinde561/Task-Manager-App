@@ -8,6 +8,9 @@ app = Flask(__name__)
 # 🔐 secret key
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
+print("MYSQL HOST:", os.getenv("MYSQLHOST"))
+print("MYSQL DB:", os.getenv("MYSQLDATABASE"))
+
 # ---------------- SAFE DB CONNECTION ----------------
 def get_db():
     return mysql.connector.connect(
@@ -15,7 +18,7 @@ def get_db():
         user=os.getenv("MYSQLUSER"),
         password=os.getenv("MYSQLPASSWORD"),
         database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT", "3306"))  # 🔥 FIX HERE
+        port=int(os.getenv("MYSQLPORT", "3306"))
     )
 
 # ---------------- HOME ----------------
