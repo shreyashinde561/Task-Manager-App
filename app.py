@@ -1,30 +1,22 @@
 from flask import Flask, render_template, request, redirect, session
 import mysql.connector
 import os
-import urllib.parse
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = "secret"
 
-# ---------------- DB CONNECTION (FIXED) ----------------
-# ---------------- DB CONNECTION (FINAL FIX) ----------------
+# ---------------- DB CONNECTION (FINAL CLEAN) ----------------
 
-
-mysql_url = os.getenv("MYSQL_URL")
-
-if mysql_url:
-    url = urllib.parse.urlparse(mysql_url)
-
+if os.getenv("MYSQLHOST"):   # Railway mode
     db = mysql.connector.connect(
-        host=url.hostname,
-        user=url.username,
-        password=url.password,
-        database=url.path[1:],  # remove leading /
-        port=url.port
+        host=os.getenv("MYSQLHOST"),
+        user=os.getenv("MYSQLUSER"),
+        password=os.getenv("MYSQLPASSWORD"),
+        database=os.getenv("MYSQLDATABASE"),
+        port=int(os.getenv("MYSQLPORT", "3306"))
     )
-else:
-    # local fallback
+else:  # Local mode
     db = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -39,7 +31,7 @@ def home():
 
 
 # ---------------- REGISTER ----------------
-@app.route("/register", methods=["GET","POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form["username"]
@@ -57,7 +49,7 @@ def register():
         cursor.execute("""
             INSERT INTO users(username,email,password,role)
             VALUES(%s,%s,%s,'member')
-        """, (username,email,password))
+        """, (username, email, password))
 
         db.commit()
         return redirect("/")
@@ -75,7 +67,6 @@ def login():
     cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
     user = cursor.fetchone()
 
-    # ✅ FIXED PASSWORD CHECK
     if user and check_password_hash(user["password"], password):
         session["user_id"] = user["id"]
         session["username"] = user["username"]
@@ -117,9 +108,9 @@ def create_project():
     cursor.execute("""
         INSERT INTO projects(name,description,created_by)
         VALUES(%s,%s,%s)
-    """, (name,desc,session["user_id"]))
-    db.commit()
+    """, (name, desc, session["user_id"]))
 
+    db.commit()
     return redirect("/dashboard")
 
 
@@ -142,8 +133,8 @@ def create_task():
         data["assigned_to"],
         data["due_date"]
     ))
-    db.commit()
 
+    db.commit()
     return redirect("/dashboard")
 
 
@@ -165,17 +156,20 @@ def my_tasks():
 # ---------------- COMPLETE TASK ----------------
 @app.route("/complete_task/<int:id>")
 def complete_task(id):
+    if "user_id" not in session:
+        return redirect("/")
+
     cursor = db.cursor()
     cursor.execute("""
         UPDATE tasks SET status='completed'
         WHERE id=%s AND assigned_to=%s
     """, (id, session["user_id"]))
-    db.commit()
 
+    db.commit()
     return redirect("/my_tasks")
 
 
-# ---------------- ADMIN DASHBOARD ----------------
+# ---------------- ADMIN ----------------
 @app.route("/admin")
 def admin():
     if session.get("role") != "admin":
@@ -192,10 +186,12 @@ def admin():
     cursor.execute("SELECT * FROM tasks")
     tasks = cursor.fetchall()
 
-    return render_template("admin.html",
-                           users=users,
-                           projects=projects,
-                           tasks=tasks)
+    return render_template(
+        "admin.html",
+        users=users,
+        projects=projects,
+        tasks=tasks
+    )
 
 
 # ---------------- LOGOUT ----------------
