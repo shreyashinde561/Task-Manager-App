@@ -4,17 +4,18 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "secret")
 
-# ---------------- DB CONNECTION (FIXED FOR RAILWAY) ----------------
+# 🔐 safer secret key
+app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
+# ---------------- DB CONNECTION (RAILWAY SAFE) ----------------
 def get_db():
     return mysql.connector.connect(
         host=os.getenv("MYSQLHOST"),
         user=os.getenv("MYSQLUSER"),
         password=os.getenv("MYSQLPASSWORD"),
         database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT") or 3306)
+        port=int(os.getenv("MYSQLPORT", "3306"))
     )
 
 # ---------------- HOME ----------------
@@ -35,9 +36,7 @@ def register():
         password = generate_password_hash(request.form["password"])
 
         cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
-        existing = cursor.fetchone()
-
-        if existing:
+        if cursor.fetchone():
             return "Email already exists ❌"
 
         cursor.execute("""
@@ -88,11 +87,10 @@ def dashboard():
         ORDER BY tasks.id DESC
     """)
 
-    tasks = cursor.fetchall()
-    return render_template("dashboard.html", tasks=tasks)
+    return render_template("dashboard.html", tasks=cursor.fetchall())
 
 
-# ---------------- CREATE PROJECT ----------------
+# ---------------- PROJECT ----------------
 @app.route("/create_project", methods=["POST"])
 def create_project():
     if session.get("role") != "admin":
@@ -114,7 +112,7 @@ def create_project():
     return redirect("/dashboard")
 
 
-# ---------------- CREATE TASK ----------------
+# ---------------- TASK ----------------
 @app.route("/create_task", methods=["POST"])
 def create_task():
     if session.get("role") != "admin":
@@ -140,84 +138,16 @@ def create_task():
     return redirect("/dashboard")
 
 
-# ---------------- ABOUT ----------------
+# ---------------- OTHER ROUTES ----------------
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-
-# ---------------- CONTACT ----------------
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
 
 
-# ---------------- MY TASKS ----------------
-@app.route("/my_tasks")
-def my_tasks():
-    if "user_id" not in session:
-        return redirect("/")
-
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT * FROM tasks WHERE assigned_to=%s
-    """, (session["user_id"],))
-
-    return render_template("user_tasks.html", tasks=cursor.fetchall())
-
-
-# ---------------- COMPLETE TASK ----------------
-@app.route("/complete_task/<int:id>")
-def complete_task(id):
-    if "user_id" not in session:
-        return redirect("/")
-
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("""
-        UPDATE tasks SET status='completed'
-        WHERE id=%s AND assigned_to=%s
-    """, (id, session["user_id"]))
-
-    db.commit()
-    return redirect("/my_tasks")
-
-
-# ---------------- ADMIN ----------------
-@app.route("/admin")
-def admin():
-    if session.get("role") != "admin":
-        return "Unauthorized"
-
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    cursor.execute("SELECT * FROM users")
-    users = cursor.fetchall()
-
-    cursor.execute("SELECT * FROM projects")
-    projects = cursor.fetchall()
-
-    cursor.execute("SELECT * FROM tasks")
-    tasks = cursor.fetchall()
-
-    return render_template("admin.html",
-                           users=users,
-                           projects=projects,
-                           tasks=tasks)
-
-
-# ---------------- LOGOUT ----------------
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-
-# ---------------- RUN ----------------
+# ---------------- RUN (LOCAL ONLY) ----------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
