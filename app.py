@@ -8,21 +8,16 @@ app.secret_key = "secret"
 
 # ---------------- DB CONNECTION (FINAL CLEAN) ----------------
 
-if os.getenv("MYSQLHOST"):   # Railway mode
-    db = mysql.connector.connect(
-        host=os.getenv("MYSQLHOST"),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT", "3306"))
+def get_db():
+    return mysql.connector.connect(
+        host=os.getenv("MYSQLHOST", "localhost"),
+        user=os.getenv("MYSQLUSER", "root"),
+        password=os.getenv("MYSQLPASSWORD", "root"),
+        database=os.getenv("MYSQLDATABASE", "task_manager_app"),
+        port=int(os.getenv("MYSQLPORT", 3306))
     )
-else:  # Local mode
-    db = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="collab_app"
-    )
+
+db = get_db()
 
 # ---------------- HOME ----------------
 @app.route("/")
@@ -39,7 +34,6 @@ def register():
         password = generate_password_hash(request.form["password"])
 
         cursor = db.cursor()
-
         cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
         existing = cursor.fetchone()
 
@@ -101,14 +95,16 @@ def create_project():
     if session.get("role") != "admin":
         return "Unauthorized"
 
-    name = request.form["name"]
-    desc = request.form["description"]
-
     cursor = db.cursor()
+
     cursor.execute("""
         INSERT INTO projects(name,description,created_by)
         VALUES(%s,%s,%s)
-    """, (name, desc, session["user_id"]))
+    """, (
+        request.form["name"],
+        request.form["description"],
+        session["user_id"]
+    ))
 
     db.commit()
     return redirect("/dashboard")
@@ -138,6 +134,18 @@ def create_task():
     return redirect("/dashboard")
 
 
+# ---------------- ABOUT ----------------
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+# ---------------- CONTACT ----------------
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+
 # ---------------- MY TASKS ----------------
 @app.route("/my_tasks")
 def my_tasks():
@@ -146,8 +154,7 @@ def my_tasks():
 
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
-        SELECT * FROM tasks
-        WHERE assigned_to=%s
+        SELECT * FROM tasks WHERE assigned_to=%s
     """, (session["user_id"],))
 
     return render_template("user_tasks.html", tasks=cursor.fetchall())
@@ -186,12 +193,10 @@ def admin():
     cursor.execute("SELECT * FROM tasks")
     tasks = cursor.fetchall()
 
-    return render_template(
-        "admin.html",
-        users=users,
-        projects=projects,
-        tasks=tasks
-    )
+    return render_template("admin.html",
+                           users=users,
+                           projects=projects,
+                           tasks=tasks)
 
 
 # ---------------- LOGOUT ----------------

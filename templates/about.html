@@ -1,9 +1,8 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>About Us</title>
+<title>About - Team Task Manager App</title>
+
 <style>
 body.dark {
   background: radial-gradient(circle at top left,#4facfe,#0f2027);
@@ -15,7 +14,7 @@ body.light {
   color: #111;
 }
 
-body.light .sidebar {
+body.light nav {
   background: #ffffff;
   color: black;
 }
@@ -25,15 +24,13 @@ body.light .card {
   color: black;
 }
 
-body.light a {
-  color: #333;
-}
 body{
   margin:0;
   font-family:Segoe UI,Arial;
   background:#0f172a;
   color:white;
 }
+
 nav{
   background:#ffffff10;
   backdrop-filter:blur(15px);
@@ -41,18 +38,26 @@ nav{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  
 }
+
 .logo{
-  height: 50px;   /* smaller size */
+  height: 50px;
   width: auto;
 }
-nav a{color:#34ffd2;text-decoration:none;margin-left:20px;}
+
+nav a{
+  color:#34ffd2;
+  text-decoration:none;
+  margin-left:20px;
+}
+
 .container{
   padding:80px;
   text-align:center;
 }
+
 h1{color:#34ffd2;}
+
 .card{
   background:#ffffff10;
   padding:30px;
@@ -60,15 +65,17 @@ h1{color:#34ffd2;}
   margin-top:40px;
 }
 </style>
-</head>
-<body>
 
+</head>
+
+<body>
 
 <nav>
   <div class="nav-left">
     <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
-    <b>Collab App</b>
+    <b>Team Task Manager App</b>
   </div>
+
   <div>
     <a href="/">Login</a>
     <a href="/about">About</a>
@@ -76,20 +83,23 @@ h1{color:#34ffd2;}
 </nav>
 
 <div class="container">
-<h1>About Us</h1>
-<div class="card">
+  <h1>About Team Task Manager App</h1>
 
-<p>
-  <strong>Collab App</strong> is developed by <strong>Sparklab Solutions</strong> to provide a reliable and efficient collaboration platform for users. 
-  The application was designed to solve common problems related to file management and teamwork by offering a centralized system for sharing and organizing files.
-  
-  Our objective is to create a secure and easy-to-use solution that enhances productivity and supports smooth collaboration between users. 
-  Collab App represents our commitment to innovation, simplicity, and user satisfaction.
-  </p>
-<p>
-Our mission is to make teamwork simple, secure and productive.
-</p>
-</div>
+  <div class="card">
+    <p>
+      <strong>Team Task Manager App</strong> is a productivity platform designed to help teams manage tasks,
+      track progress, and collaborate efficiently in one place.
+    </p>
+
+    <p>
+      The system is built to improve workflow organization, task assignment, and team communication
+      with a simple and clean interface.
+    </p>
+
+    <p>
+      Our mission is to make teamwork simple, secure, and productive.
+    </p>
+  </div>
 </div>
 
 </body>
