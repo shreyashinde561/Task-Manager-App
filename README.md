@@ -44,10 +44,13 @@ It allows users to create projects, assign tasks, and track progress with role-b
 ## 📸 Screenshots
 
 ### Login Page
-<img width="1901" height="911" src="https://github.com/user-attachments/assets/aefd6235-2f71-4807-b9a3-b020575e1665" />
+<img width="1916" height="912" alt="Screenshot 2026-05-03 224906" src="https://github.com/user-attachments/assets/5afbd042-47e1-46f2-ab84-c4faf81b215f" />
+
+<img width="1912" height="900" alt="Screenshot 2026-05-03 224838" src="https://github.com/user-attachments/assets/de856b17-3104-4c93-95ec-d20ff2350a95" />
+
 
 ### Dashboard
-<img width="1899" height="907" src="https://github.com/user-attachments/assets/4da8f020-af3e-4161-a828-081564c6e5f9" />
+<img width="1919" height="919" alt="Screenshot 2026-05-03 224853" src="https://github.com/user-attachments/assets/3ba88173-7b36-44e3-84b3-f3631a6672ad" />
 
 ---
 
