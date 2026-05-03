@@ -5,135 +5,174 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-# 🔐 secret key
+# ================= SAFE SECRET =================
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
-print("MYSQL HOST:", os.getenv("MYSQLHOST"))
-print("MYSQL DB:", os.getenv("MYSQLDATABASE"))
 
-# ---------------- SAFE DB CONNECTION ----------------
+# ================= DB CONNECTION =================
 def get_db():
-    return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST"),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT", "3306"))
-    )
+    try:
+        return mysql.connector.connect(
+            host=os.getenv("MYSQLHOST"),
+            user=os.getenv("MYSQLUSER"),
+            password=os.getenv("MYSQLPASSWORD"),
+            database=os.getenv("MYSQLDATABASE"),
+            port=int(os.getenv("MYSQLPORT", "3306"))
+        )
+    except Exception as e:
+        print("DB CONNECTION ERROR:", e)
+        return None
 
-# ---------------- HOME ----------------
+
+# ================= HOME =================
 @app.route("/")
 def home():
     return render_template("login.html")
 
 
-# ---------------- REGISTER ----------------
+# ================= REGISTER =================
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    db = get_db()
-    cursor = db.cursor()
+    try:
+        if request.method == "POST":
+            db = get_db()
+            if not db:
+                return "Database not connected"
 
-    if request.method == "POST":
-        username = request.form["username"]
-        email = request.form["email"]
-        password = generate_password_hash(request.form["password"])
+            cursor = db.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
-        if cursor.fetchone():
-            return "Email already exists ❌"
+            username = request.form["username"]
+            email = request.form["email"]
+            password = generate_password_hash(request.form["password"])
 
-        cursor.execute("""
-            INSERT INTO users(username,email,password,role)
-            VALUES(%s,%s,%s,'member')
-        """, (username, email, password))
+            cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
+            if cursor.fetchone():
+                return "Email already exists ❌"
 
-        db.commit()
-        return redirect("/")
+            cursor.execute("""
+                INSERT INTO users(username,email,password,role)
+                VALUES(%s,%s,%s,'member')
+            """, (username, email, password))
 
-    return render_template("reg.html")
+            db.commit()
+            return redirect("/")
+
+        return render_template("reg.html")
+
+    except Exception as e:
+        return f"Error: {e}"
 
 
-# ---------------- LOGIN ----------------
+# ================= LOGIN =================
 @app.route("/login", methods=["POST"])
 def login():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+    try:
+        db = get_db()
+        if not db:
+            return "DB not connected"
 
-    cursor.execute("SELECT * FROM users WHERE email=%s",
-                   (request.form["email"],))
-    user = cursor.fetchone()
+        cursor = db.cursor(dictionary=True)
 
-    if user and check_password_hash(user["password"], request.form["password"]):
-        session["user_id"] = user["id"]
-        session["username"] = user["username"]
-        session["role"] = user["role"]
-        return redirect("/dashboard")
+        email = request.form["email"]
+        password = request.form["password"]
 
-    return "Invalid login"
+        cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
+        user = cursor.fetchone()
+
+        if user and check_password_hash(user["password"], password):
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
+            session["role"] = user["role"]
+            return redirect("/dashboard")
+
+        return "Invalid login"
+
+    except Exception as e:
+        return f"Error: {e}"
 
 
-# ---------------- DASHBOARD ----------------
+# ================= DASHBOARD =================
 @app.route("/dashboard")
 def dashboard():
-    if "user_id" not in session:
-        return redirect("/")
+    try:
+        if "user_id" not in session:
+            return redirect("/")
 
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+        db = get_db()
+        if not db:
+            return "DB not connected"
 
-    cursor.execute("""
-        SELECT projects.name, tasks.title, tasks.status, tasks.due_date
-        FROM tasks
-        JOIN projects ON tasks.project_id = projects.id
-        ORDER BY tasks.id DESC
-    """)
+        cursor = db.cursor(dictionary=True)
 
-    return render_template("dashboard.html", tasks=cursor.fetchall())
+        cursor.execute("""
+            SELECT projects.name, tasks.title, tasks.status, tasks.due_date
+            FROM tasks
+            JOIN projects ON tasks.project_id = projects.id
+            ORDER BY tasks.id DESC
+        """)
+
+        return render_template("dashboard.html", tasks=cursor.fetchall())
+
+    except Exception as e:
+        return f"Error: {e}"
 
 
-# ---------------- PROJECT ----------------
+# ================= CREATE PROJECT =================
 @app.route("/create_project", methods=["POST"])
 def create_project():
-    if session.get("role") != "admin":
-        return "Unauthorized"
+    try:
+        if session.get("role") != "admin":
+            return "Unauthorized"
 
-    db = get_db()
-    cursor = db.cursor()
+        db = get_db()
+        if not db:
+            return "DB not connected"
 
-    cursor.execute("""
-        INSERT INTO projects(name,description,created_by)
-        VALUES(%s,%s,%s)
-    """, (
-        request.form["name"],
-        request.form["description"],
-        session["user_id"]
-    ))
+        cursor = db.cursor()
 
-    db.commit()
-    return redirect("/dashboard")
+        cursor.execute("""
+            INSERT INTO projects(name,description,created_by)
+            VALUES(%s,%s,%s)
+        """, (
+            request.form["name"],
+            request.form["description"],
+            session["user_id"]
+        ))
+
+        db.commit()
+        return redirect("/dashboard")
+
+    except Exception as e:
+        return f"Error: {e}"
 
 
-# ---------------- TASK ----------------
+# ================= CREATE TASK =================
 @app.route("/create_task", methods=["POST"])
 def create_task():
-    if session.get("role") != "admin":
-        return "Unauthorized"
+    try:
+        if session.get("role") != "admin":
+            return "Unauthorized"
 
-    db = get_db()
-    cursor = db.cursor()
+        db = get_db()
+        if not db:
+            return "DB not connected"
 
-    d = request.form
+        cursor = db.cursor()
+        d = request.form
 
-    cursor.execute("""
-        INSERT INTO tasks(project_id,title,description,assigned_to,status,due_date)
-        VALUES(%s,%s,%s,%s,'pending',%s)
-    """, (d["project_id"], d["title"], d["description"], d["assigned_to"], d["due_date"]))
+        cursor.execute("""
+            INSERT INTO tasks(project_id,title,description,assigned_to,status,due_date)
+            VALUES(%s,%s,%s,%s,'pending',%s)
+        """, (d["project_id"], d["title"], d["description"], d["assigned_to"], d["due_date"]))
 
-    db.commit()
-    return redirect("/dashboard")
+        db.commit()
+        return redirect("/dashboard")
+
+    except Exception as e:
+        return f"Error: {e}"
 
 
-# ---------------- STATIC PAGES ----------------
+# ================= STATIC PAGES =================
 @app.route("/about")
 def about():
     return render_template("about.html")
@@ -143,7 +182,6 @@ def contact():
     return render_template("contact.html")
 
 
-# ---------------- RUN ----------------
+# ================= RUN =================
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
