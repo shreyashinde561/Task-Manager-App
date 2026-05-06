@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, session
 import mysql.connector
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import jsonify
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
@@ -137,39 +136,7 @@ def create_task():
 
     db.commit()
     return redirect("/dashboard")
-@app.route("/complete_task/<int:id>")
-def complete_task(id):
-    db = get_db()
-    cursor = db.cursor()
 
-    cursor.execute("UPDATE tasks SET status='completed' WHERE id=%s", (id,))
-    db.commit()
-
-    return redirect("/my_tasks")
-
-@app.route("/api/tasks")
-def api_tasks():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    cursor.execute("SELECT * FROM tasks")
-    return jsonify(cursor.fetchall())
-
-@app.route("/api/tasks", methods=["POST"])
-def api_create_task():
-    db = get_db()
-    cursor = db.cursor()
-
-    d = request.json
-
-    cursor.execute("""
-        INSERT INTO tasks(project_id,title,description,assigned_to,status,due_date)
-        VALUES(%s,%s,%s,%s,'pending',%s)
-    """, (d["project_id"], d["title"], d["description"], d["assigned_to"], d["due_date"]))
-
-    db.commit()
-
-    return {"message": "Task created"}
 
 # ---------------- MY TASKS ----------------
 @app.route("/my_tasks")
@@ -181,17 +148,15 @@ def my_tasks():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-    SELECT 
-        tasks.id,
-        tasks.title AS task_title,
-        tasks.description AS task_description,
-        tasks.status,
-        tasks.due_date AS deadline,
-        projects.name AS project
-    FROM tasks
-    JOIN projects ON tasks.project_id = projects.id
-    WHERE tasks.assigned_to = %s
-""", (session["user_id"],))
+        SELECT 
+            tasks.title,
+            tasks.status,
+            tasks.due_date AS deadline,
+            projects.name AS project
+        FROM tasks
+        JOIN projects ON tasks.project_id = projects.id
+        WHERE tasks.assigned_to = %s
+    """, (session["user_id"],))
 
     tasks = cursor.fetchall()
 
@@ -222,15 +187,6 @@ def view_tasks():
 
     return render_template("view_tasks.html", tasks=tasks)
 
-
-@app.route("/toggle_theme")
-def toggle_theme():
-    if session.get("theme") == "dark":
-        session["theme"] = "light"
-    else:
-        session["theme"] = "dark"
-
-    return redirect(request.referrer or "/dashboard")
 
 # ---------------- TASK DETAILS ----------------
 @app.route("/task/<int:id>")

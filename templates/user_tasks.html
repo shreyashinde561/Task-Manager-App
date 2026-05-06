@@ -109,7 +109,7 @@ button:hover{
 
 <p>{{ task.task_description }}</p>
 
-<p class="deadline">Deadline: {{ task.deadline }}</p>
+<p class="deadline">Deadline: {{ task.deadline or "Not set" }}</p>
 
 <p>
 Status:

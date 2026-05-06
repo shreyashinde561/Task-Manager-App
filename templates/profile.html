@@ -148,14 +148,14 @@ p{
 <body class="{{ session.get('theme','dark') }}">
 <div class="container">
 
-{% if user[2] %}
-<img src="{{ url_for('static', filename='profile_pics/' ~ user[2]) }}" class="profile-pic">
+{% if user.profile_pic %}
+<img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_pic) }}" class="profile-pic">
 {% else %}
-<div class="avatar">{{ user[0][0]|upper }}</div>
+<div class="avatar">{{ user.username[0]|upper }}</div>
 {% endif %}
 
-<h2>{{ user[0] }}</h2>
-<p>{{ user[1] }}</p>
+<h2>{{ user.username }}</h2>
+<p>{{ user.email }}</p>
 
 <p>
   Logout Permission:
