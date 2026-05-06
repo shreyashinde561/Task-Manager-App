@@ -9,21 +9,13 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
 
 # ---------------- DB CONNECTION ----------------
-#def get_db():
-    ##return mysql.connector.connect(
-      #  host="localhost",
-       # user="root",
-        #password="root",
-        #database="task_manager",
-        #port=3306
-    #)
 def get_db():
     return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST"),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT", 3306))
+        host="localhost",
+        user="root",
+        password="root",
+        database="task_manager",
+        port=3306
     )
 
 
@@ -179,6 +171,17 @@ def api_create_task():
 
     return {"message": "Task created"}
 
+@app.route("/toggle_theme")
+def toggle_theme():
+    theme = session.get("theme", "dark")
+
+    if theme == "dark":
+        session["theme"] = "light"
+    else:
+        session["theme"] = "dark"
+
+    return redirect(request.referrer or "/dashboard")
+
 # ---------------- MY TASKS ----------------
 @app.route("/my_tasks")
 def my_tasks():
@@ -231,14 +234,7 @@ def view_tasks():
     return render_template("view_tasks.html", tasks=tasks)
 
 
-@app.route("/toggle_theme")
-def toggle_theme():
-    if session.get("theme") == "dark":
-        session["theme"] = "light"
-    else:
-        session["theme"] = "dark"
 
-    return redirect(request.referrer or "/dashboard")
 
 # ---------------- TASK DETAILS ----------------
 @app.route("/task/<int:id>")
