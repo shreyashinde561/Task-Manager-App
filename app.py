@@ -11,11 +11,11 @@ app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 # ---------------- DB CONNECTION ----------------
 def get_db():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="task_manager",
-        port=3306
+        host=os.getenv("MYSQLHOST"),
+        user=os.getenv("MYSQLUSER"),
+        password=os.getenv("MYSQLPASSWORD"),
+        database=os.getenv("MYSQLDATABASE"),
+        port=int(os.getenv("MYSQLPORT", 3306))
     )
 
 
