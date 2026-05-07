@@ -8,15 +8,75 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev_secret")
 
 
+
+
 # ---------------- DB CONNECTION ----------------
 def get_db():
     return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST"),
-        user=os.getenv("MYSQLUSER"),
-        password=os.getenv("MYSQLPASSWORD"),
-        database=os.getenv("MYSQLDATABASE"),
-        port=int(os.getenv("MYSQLPORT", 3306))
+        host="localhost",
+        user="root",
+        password="root",
+        database="task_manager",
+        port=3306
     )
+
+
+# ---------------- AUTO CREATE TABLES ----------------
+def create_tables():
+    db = get_db()
+    cursor = db.cursor()
+
+    # USERS TABLE
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role VARCHAR(50) DEFAULT 'member'
+    )
+    """)
+
+    # PROJECTS TABLE
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS projects (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        created_by INT
+    )
+    """)
+
+    # TASKS TABLE
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS tasks (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        project_id INT,
+        title VARCHAR(255),
+        description TEXT,
+        assigned_to INT,
+        status VARCHAR(50) DEFAULT 'pending',
+        due_date DATE
+    )
+    """)
+
+    # MESSAGES TABLE
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+
+# RUN TABLE CREATION
+create_tables()
 
 
 # ---------------- HOME ----------------
@@ -72,7 +132,7 @@ def login():
     return "Invalid login"
 
 
-# ---------------- DASHBOARD ----------------
+## ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -81,6 +141,7 @@ def dashboard():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
+    # Fetch tasks
     cursor.execute("""
         SELECT 
             projects.name,
@@ -94,8 +155,45 @@ def dashboard():
 
     tasks = cursor.fetchall()
 
-    return render_template("dashboard.html", tasks=tasks)
+    # Fetch projects
+    cursor.execute("SELECT * FROM projects")
+    projects = cursor.fetchall()
 
+    # Fetch users
+    cursor.execute("SELECT id, username FROM users")
+    users = cursor.fetchall()
+
+    return render_template(
+        "dashboard.html",
+        tasks=tasks,
+        projects=projects,
+        users=users
+    )
+# ---------------- ADD TEAM MEMBER ----------------
+@app.route("/add_member", methods=["POST"])
+def add_member():
+    if session.get("role") != "admin":
+        return "Unauthorized"
+
+    db = get_db()
+    cursor = db.cursor()
+
+    project_id = request.form["project_id"]
+    user_id = request.form["user_id"]
+
+    cursor.execute("""
+        INSERT INTO project_members(project_id, user_id)
+        VALUES(%s,%s)
+    """, (project_id, user_id))
+
+    db.commit()
+
+    return """
+    <script>
+        alert('Member added successfully!');
+        window.location.href='/dashboard';
+    </script>
+    """
 
 # ---------------- CREATE PROJECT ----------------
 @app.route("/create_project", methods=["POST"])
