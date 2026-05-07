@@ -50,7 +50,7 @@ It allows users to create projects, assign tasks, and track progress with role-b
 
 
 ### Dashboard
-<img width="1919" height="919" alt="Screenshot 2026-05-03 224853" src="https://github.com/user-attachments/assets/3ba88173-7b36-44e3-84b3-f3631a6672ad" />
+<img width="1910" height="914" alt="Screenshot 2026-05-07 102348" src="https://github.com/user-attachments/assets/97e35960-579b-47fa-80d2-617e8969e8af" />
 
 ---
 
